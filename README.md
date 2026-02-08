@@ -49,43 +49,32 @@ python src/check_ships.py
 \\\
 
 ##  Project Structure
-graph TD
-    A[📦 dep_26_group_13] --> B[📁 src/]
-    A --> C[📁 docs/]
-    A --> D[📁 database/]
-    A --> E[📄 README.md]
-    A --> F[📄 requirements.txt]
-    A --> G[📄 .gitignore]
-    
-    B --> B1[📄 collect_ais.py]
-    B --> B2[📄 setup_ais.py]
-    B --> B3[📄 check_ships.py]
-    
-    C --> C1[📄 week4_progress.md]
-    
-    D --> D1[📄 schema.sql]
-    
-    style A fill:#e1f5fe
-    style B fill:#f3e5f5
-    style C fill:#e8f5e8
-    style D fill:#fff3e0
+📦 dep_26_group_13/
+├── 📁 src/
+│   ├── 📄 collect_ais.py     # Main data collection
+│   ├── 📄 setup_ais.py       # Database setup
+│   └── 📄 check_ships.py     # Verification
+├── 📁 docs/
+│   └── 📄 week4_progress.md  # Weekly report
+├── 📁 database/
+│   └── 📄 schema.sql         # Database schema
+├── 📄 README.md              # Project documentation
+├── 📄 requirements.txt       # Python dependencies
+└── 📄 .gitignore            # Ignored files
 
 ##  Database Schema
-erDiagram
-    AIS_SHIPS {
-        bigint id PK "SERIAL PRIMARY KEY"
-        integer mmsi "Ship identifier"
-        varchar message_type "location/metadata"
-        decimal latitude "Position"
-        decimal longitude "Position"
-        decimal speed "Knots"
-        decimal course "Degrees"
-        varchar ship_name "Vessel name"
-        timestamp received_at "Auto timestamp"
-    }
-    
-    note "Indexes: mmsi, received_at, location" as N1
-    AIS_SHIPS }|--|| N1 : "optimized queries"
+CREATE TABLE ais_ships (
+    id SERIAL PRIMARY KEY,
+    mmsi INTEGER,                    -- Maritime Mobile Service Identity
+    message_type VARCHAR(10),        -- 'location' or 'metadata'
+    latitude DECIMAL(9,6),           -- Position (-90 to 90)
+    longitude DECIMAL(9,6),          -- Position (-180 to 180)
+    speed DECIMAL(5,2),              -- Speed Over Ground (knots)
+    course DECIMAL(5,2),             -- Course Over Ground (degrees)
+    ship_name VARCHAR(255),          -- Vessel name
+    received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 
 ##  Team Members
 - **Ruwan Gammanage** 
