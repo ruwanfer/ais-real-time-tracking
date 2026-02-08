@@ -81,7 +81,7 @@ CREATE TABLE ais_ships (
 - **Chandrasekara, Umesha** 
 - **Aldhaher, Ola Kh. Abdulsaheb** 
 
-## 📅 Project Timeline
+##  Project Timeline
 | Week | Dates | Focus | Status |
 |------|-------|-------|--------|
 | 3 | Jan 27-Feb 2 | Research & Planning | ✅ |
