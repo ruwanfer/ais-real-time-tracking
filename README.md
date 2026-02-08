@@ -49,32 +49,43 @@ python src/check_ships.py
 \\\
 
 ##  Project Structure
-\\\
-dep_26_group_13/
-├── src/                    # Source code
-│   ├── collect_ais.py     # Main data collection
-│   ├── setup_ais.py       # DB initialization
-│   └── check_ships.py     # Data verification
-├── database/
-│   └── schema.sql         # Database schema
-├── docs/                  # Weekly reports
-└── requirements.txt       # Dependencies
-\\\
+graph TD
+    A[📦 dep_26_group_13] --> B[📁 src/]
+    A --> C[📁 docs/]
+    A --> D[📁 database/]
+    A --> E[📄 README.md]
+    A --> F[📄 requirements.txt]
+    A --> G[📄 .gitignore]
+    
+    B --> B1[📄 collect_ais.py]
+    B --> B2[📄 setup_ais.py]
+    B --> B3[📄 check_ships.py]
+    
+    C --> C1[📄 week4_progress.md]
+    
+    D --> D1[📄 schema.sql]
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style C fill:#e8f5e8
+    style D fill:#fff3e0
 
 ##  Database Schema
-\\\sql
-CREATE TABLE ais_ships (
-    id SERIAL PRIMARY KEY,
-    mmsi INTEGER,
-    message_type VARCHAR(10),
-    latitude DECIMAL(9,6),
-    longitude DECIMAL(9,6),
-    speed DECIMAL(5,2),
-    course DECIMAL(5,2),
-    ship_name VARCHAR(255),
-    received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-\\\
+erDiagram
+    AIS_SHIPS {
+        bigint id PK "SERIAL PRIMARY KEY"
+        integer mmsi "Ship identifier"
+        varchar message_type "location/metadata"
+        decimal latitude "Position"
+        decimal longitude "Position"
+        decimal speed "Knots"
+        decimal course "Degrees"
+        varchar ship_name "Vessel name"
+        timestamp received_at "Auto timestamp"
+    }
+    
+    note "Indexes: mmsi, received_at, location" as N1
+    AIS_SHIPS }|--|| N1 : "optimized queries"
 
 ##  Team Members
 - **Ruwan Gammanage** 
