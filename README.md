@@ -1,23 +1,23 @@
-﻿# Finnish AIS Data Engineering Pipeline
+# Finnish AIS Data Engineering Pipeline
 
-## 📋 Description
+##  Description
 Real-time data pipeline for processing Finnish maritime AIS data with visualization and prediction capabilities.
 
 **Data Source**: [Digitraffic.fi Marine Traffic API](https://www.digitraffic.fi/en/marine-traffic/)
 
-## 🚀 Current Status (Week 4 - Feb 9, 2024)
+##  Current Status (Week 4 - Feb 9, 2024)
 ✅ **Phase 1 Complete**: Real-time AIS data collection & PostgreSQL storage  
 🔄 **Phase 2 In Progress**: REST API development  
 ⏳ **Phase 3**: Real-time visualization  
 ⏳ **Phase 4**: Trajectory prediction  
 
-## 📊 Latest Results
+##  Latest Results
 - **81+ unique vessels** tracked with names
 - **1000+ AIS messages** stored in database
 - **Real-time processing** (<5 sec latency)
 - **Complete data**: Positions, speeds, courses, ship names
 
-## 🛠️ Quick Start
+##  Quick Start
 
 ### Prerequisites
 - Python 3.8+
@@ -48,7 +48,7 @@ python src/check_ships.py
 # Expected: Shows 81+ ships with names
 \\\
 
-## 📁 Project Structure
+##  Project Structure
 \\\
 dep_26_group_13/
 ├── src/                    # Source code
@@ -61,7 +61,7 @@ dep_26_group_13/
 └── requirements.txt       # Dependencies
 \\\
 
-## 🗃️ Database Schema
+##  Database Schema
 \\\sql
 CREATE TABLE ais_ships (
     id SERIAL PRIMARY KEY,
@@ -76,10 +76,10 @@ CREATE TABLE ais_ships (
 );
 \\\
 
-## 👥 Team Members
-- **Ruwan Gammanage** - Data Pipeline & Database
-- **[Teammate 1]** - API Development  
-- **[Teammate 2]** - Visualization & Frontend
+##  Team Members
+- **Ruwan Gammanage** 
+- **Chandrasekara, Umesha** 
+- **Aldhaher, Ola Kh. Abdulsaheb** 
 
 ## 📅 Project Timeline
 | Week | Dates | Focus | Status |
@@ -91,7 +91,7 @@ CREATE TABLE ais_ships (
 | 7 | Feb 24-Mar 1 | Trajectory Prediction | ⏳ |
 | 8-11 | Mar 2-30 | Integration & Deployment | ⏳ |
 
-## 🔗 Resources
+##  Resources
 - [Digitraffic API Docs](https://www.digitraffic.fi/en/marine-traffic/)
 - [Full Documentation](docs/)
 - [Week 4 Progress Report](docs/week4_progress.md)
