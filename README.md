@@ -1,0 +1,101 @@
+﻿# Finnish AIS Data Engineering Pipeline
+
+## 📋 Description
+Real-time data pipeline for processing Finnish maritime AIS data with visualization and prediction capabilities.
+
+**Data Source**: [Digitraffic.fi Marine Traffic API](https://www.digitraffic.fi/en/marine-traffic/)
+
+## 🚀 Current Status (Week 4 - Feb 9, 2024)
+✅ **Phase 1 Complete**: Real-time AIS data collection & PostgreSQL storage  
+🔄 **Phase 2 In Progress**: REST API development  
+⏳ **Phase 3**: Real-time visualization  
+⏳ **Phase 4**: Trajectory prediction  
+
+## 📊 Latest Results
+- **81+ unique vessels** tracked with names
+- **1000+ AIS messages** stored in database
+- **Real-time processing** (<5 sec latency)
+- **Complete data**: Positions, speeds, courses, ship names
+
+## 🛠️ Quick Start
+
+### Prerequisites
+- Python 3.8+
+- PostgreSQL 13+
+- Git
+
+### Installation
+\\\ash
+# Clone repository
+git clone https://git.dc.turkuamk.fi/ruwan.gammanage/dep_26_group_13.git
+cd dep_26_group_13
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Setup database
+createdb ais_data
+python src/setup_ais.py
+
+# Run data collection
+python src/collect_ais.py
+\\\
+
+### Verify Installation
+\\\ash
+# Check collected ships
+python src/check_ships.py
+# Expected: Shows 81+ ships with names
+\\\
+
+## 📁 Project Structure
+\\\
+dep_26_group_13/
+├── src/                    # Source code
+│   ├── collect_ais.py     # Main data collection
+│   ├── setup_ais.py       # DB initialization
+│   └── check_ships.py     # Data verification
+├── database/
+│   └── schema.sql         # Database schema
+├── docs/                  # Weekly reports
+└── requirements.txt       # Dependencies
+\\\
+
+## 🗃️ Database Schema
+\\\sql
+CREATE TABLE ais_ships (
+    id SERIAL PRIMARY KEY,
+    mmsi INTEGER,
+    message_type VARCHAR(10),
+    latitude DECIMAL(9,6),
+    longitude DECIMAL(9,6),
+    speed DECIMAL(5,2),
+    course DECIMAL(5,2),
+    ship_name VARCHAR(255),
+    received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+\\\
+
+## 👥 Team Members
+- **Ruwan Gammanage** - Data Pipeline & Database
+- **[Teammate 1]** - API Development  
+- **[Teammate 2]** - Visualization & Frontend
+
+## 📅 Project Timeline
+| Week | Dates | Focus | Status |
+|------|-------|-------|--------|
+| 3 | Jan 27-Feb 2 | Research & Planning | ✅ |
+| 4 | Feb 3-9 | Database & Data Collection | ✅ |
+| 5 | Feb 10-16 | REST API Development | 🔄 |
+| 6 | Feb 17-23 | Real-time Visualization | ⏳ |
+| 7 | Feb 24-Mar 1 | Trajectory Prediction | ⏳ |
+| 8-11 | Mar 2-30 | Integration & Deployment | ⏳ |
+
+## 🔗 Resources
+- [Digitraffic API Docs](https://www.digitraffic.fi/en/marine-traffic/)
+- [Full Documentation](docs/)
+- [Week 4 Progress Report](docs/week4_progress.md)
+
+---
+**Repository**: https://git.dc.turkuamk.fi/ruwan.gammanage/dep_26_group_13  
+**Last Updated**: February 9, 2024
