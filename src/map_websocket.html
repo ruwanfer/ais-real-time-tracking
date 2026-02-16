@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AIS Real-Time Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        #map { height: 600px; }
+        #status { padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Finnish AIS - Real-Time Ship Tracking</h1>
+    <div id="status">Connecting...</div>
+    <div id="map"></div>
+
+    <script>
+        var map = L.map('map').setView([60.0, 24.0], 7);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var markers = {};
+        var socket = io('http://localhost:5000');
+        
+        document.getElementById('status').innerHTML = 'Connecting...';
+
+        socket.on('connect', function() {
+            document.getElementById('status').innerHTML = 'Connected - Receiving real-time updates';
+        });
+
+        socket.on('disconnect', function() {
+            document.getElementById('status').innerHTML = 'Disconnected';
+        });
+
+        socket.on('all_ships', function(ships) {
+            console.log('Received', ships.length, 'ships');
+            
+            for (var mmsi in markers) {
+                map.removeLayer(markers[mmsi]);
+            }
+            markers = {};
+            
+            ships.forEach(function(ship) {
+                addShipMarker(ship);
+            });
+            
+            document.getElementById('status').innerHTML = 
+                'Connected - Tracking ' + ships.length + ' ships';
+        });
+
+        socket.on('new_ship', function(ship) {
+            console.log('New ship:', ship.name);
+            addShipMarker(ship);
+            document.getElementById('status').innerHTML = 
+                'New ship: ' + ship.name;
+        });
+
+        socket.on('ship_moved', function(ship) {
+            console.log('Ship moved:', ship.name);
+            
+            if (markers[ship.mmsi]) {
+                map.removeLayer(markers[ship.mmsi]);
+            }
+            
+            addShipMarker(ship);
+        });
+
+        function addShipMarker(ship) {
+            var marker = L.marker([ship.lat, ship.lon]).addTo(map);
+            
+            marker.bindPopup(
+                '<b>' + ship.name + '</b><br>' +
+                'MMSI: ' + ship.mmsi + '<br>' +
+                'Speed: ' + ship.speed + ' knots<br>' +
+                'Course: ' + ship.course + '°'
+            );
+            
+            markers[ship.mmsi] = marker;
+        }
+    </script>
+</body>
+</html>
