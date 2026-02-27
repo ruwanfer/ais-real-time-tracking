@@ -99,13 +99,13 @@ Endpoint	Description	Example
 ##  Project Timeline
 | Week | Dates | Focus | Status |
 |------|-------|-------|--------|
-2	Feb 4-10	Research & Planning	✅
-3	Feb 11-17	Database & Data Collection	✅
-4	Feb 18-24	Real-time WebSocket & Map	✅
-5	Feb 25-Mar 3 Prediction API	🔄
-6	Mar 4-10	REST API Development	⏳
-7	Mar 11-17	Enhancements	⏳
-8-9	Mar 18-29	Testing & Deployment	⏳
+| 2 | Feb 4-10 | Research & Planning | ✅ |
+| 3 | Feb 11-17 | Database & Data Collection | ✅ |
+| 4 | Feb 18-24 | Real-time WebSocket & Map | ✅ |
+| 5 | Feb 25-Mar 3 | Prediction API | ✅ |
+| 6 | Mar 4-10 | REST API Development | 🔄 |
+| 7 | Mar 11-17 | Enhancements | ⏳ |
+| 8-9 | Mar 18-29 | Testing & Deployment | ⏳ |
 
 ##  Resources
 - [Digitraffic API Docs](https://www.digitraffic.fi/en/marine-traffic/)
