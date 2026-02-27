@@ -22,7 +22,7 @@ cursor.execute("""
     LIMIT 10
 """)
 
-print("\n🚢 Ships with names and positions:")
+print("\n Ships with names and positions:")
 for row in cursor.fetchall():
     print(f"   {row[0]}: {row[2]}, {row[3]}")
 

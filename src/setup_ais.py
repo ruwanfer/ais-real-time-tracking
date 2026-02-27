@@ -1,5 +1,16 @@
 import psycopg2
 
+
+def is_valid_vessel_name(name):
+    """Check if vessel name is valid (not empty, unknown, etc.)"""
+    if name is None:
+        return False
+    
+    name_str = str(name).strip()
+    
+    invalid_names = ['', 'unknown', 'n/a', 'na', '0', 'null', 'none', '-', '--']
+    return name_str.lower() not in invalid_names and len(name_str) > 0
+
 try:
     # Connect to database (NO PASSWORD)
     conn = psycopg2.connect(
