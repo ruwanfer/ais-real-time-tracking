@@ -7,15 +7,16 @@ Real-time data pipeline for processing Finnish maritime AIS data with visualizat
 
 ##  Current Status (Week 4 - Feb 9, 2024)
 ✅ **Phase 1 Complete**: Real-time AIS data collection & PostgreSQL storage  
-🔄 **Phase 2 In Progress**: REST API development  
-⏳ **Phase 3**: Real-time visualization  
-⏳ **Phase 4**: Trajectory prediction  
+✅ **Phase 2 Complete**: WebSocket server & real-time map visualization  
+🔄 **Phase 3 In Progress**: Prediction API development  
+⏳ **Phase 4**: REST API for historical data 
 
 ##  Latest Results
-- **81+ unique vessels** tracked with names
-- **1000+ AIS messages** stored in database
-- **Real-time processing** (<5 sec latency)
+- **124+ unique vessels** tracked with names
+- **66+ active ships** on real-time map
+- **Real-time processing** (<3 sec latency)
 - **Complete data**: Positions, speeds, courses, ship names
+- **Prediction API**: Trajectory predictions for vessel tracking
 
 ##  Quick Start
 
@@ -49,31 +50,45 @@ python src/check_ships.py
 \\\
 
 ##  Project Structure
-📦 dep_26_group_13/
+dep_26_group_13/
 ├── 📁 src/
-│   ├── 📄 collect_ais.py     # Main data collection
-│   ├── 📄 setup_ais.py       # Database setup
-│   └── 📄 check_ships.py     # Verification
+│ ├── 📄 collect_ais.py # Main data collection
+│ ├── 📄 websocket_server.py # Real-time WebSocket server
+│ ├── 📄 prediction_api.py # Prediction API (Week 5)
+│ ├── 📄 map_websocket.html # Leaflet map visualization
+│ ├── 📄 check_ships.py # Verification
+│ ├── 📄 create_named_view.py # Named ships view
+│ ├── 📄 setup.py # Database setup
+│ └── 📄 setup_ais.py # AIS table setup
 ├── 📁 docs/
-│   └── 📄 week4_progress.md  # Weekly report
-├── 📁 database/
-│   └── 📄 schema.sql         # Database schema
-├── 📄 README.md              # Project documentation
-├── 📄 requirements.txt       # Python dependencies
-└── 📄 .gitignore            # Ignored files
+│ └── 📄 architecture.md # System architecture
+├── 📄 README.md # Project documentation
+├── 📄 requirements.txt # Python dependencies
+└── 📄 .gitignore # Ignored files
 
 ##  Database Schema
 CREATE TABLE ais_ships (
     id SERIAL PRIMARY KEY,
-    mmsi INTEGER,                    -- Maritime Mobile Service Identity
-    message_type VARCHAR(10),        -- 'location' or 'metadata'
-    latitude DECIMAL(9,6),           -- Position (-90 to 90)
-    longitude DECIMAL(9,6),          -- Position (-180 to 180)
-    speed DECIMAL(5,2),              -- Speed Over Ground (knots)
-    course DECIMAL(5,2),             -- Course Over Ground (degrees)
-    ship_name VARCHAR(255),          -- Vessel name
+    mmsi INTEGER,
+    message_type VARCHAR(10),
+    latitude DECIMAL(9,6),
+    longitude DECIMAL(9,6),
+    speed DECIMAL(5,2),
+    course DECIMAL(5,2),
+    ship_name VARCHAR(255),
     received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- View for named ships only
+CREATE VIEW named_ships_only AS 
+SELECT * FROM ais_ships 
+WHERE ship_name IS NOT NULL;
+
+
+API Endpoints
+Endpoint	Description	Example
+/predict/<mmsi>	Get predictions for specific ship	/predict/210607000
+/predict/random	Get predictions for random ship	/predict/random
 
 
 ##  Team Members
@@ -84,12 +99,13 @@ CREATE TABLE ais_ships (
 ##  Project Timeline
 | Week | Dates | Focus | Status |
 |------|-------|-------|--------|
-| 3 | Jan 27-Feb 2 | Research & Planning | ✅ |
-| 4 | Feb 3-9 | Database & Data Collection | ✅ |
-| 5 | Feb 10-16 | REST API Development | 🔄 |
-| 6 | Feb 17-23 | Real-time Visualization | ⏳ |
-| 7 | Feb 24-Mar 1 | Trajectory Prediction | ⏳ |
-| 8-11 | Mar 2-30 | Integration & Deployment | ⏳ |
+2	Feb 4-10	Research & Planning	✅
+3	Feb 11-17	Database & Data Collection	✅
+4	Feb 18-24	Real-time WebSocket & Map	✅
+5	Feb 25-Mar 3 Prediction API	🔄
+6	Mar 4-10	REST API Development	⏳
+7	Mar 11-17	Enhancements	⏳
+8-9	Mar 18-29	Testing & Deployment	⏳
 
 ##  Resources
 - [Digitraffic API Docs](https://www.digitraffic.fi/en/marine-traffic/)
@@ -98,4 +114,4 @@ CREATE TABLE ais_ships (
 
 ---
 **Repository**: https://git.dc.turkuamk.fi/ruwan.gammanage/dep_26_group_13  
-**Last Updated**: February 9, 2024
+**Last Updated**: February 27, 2024
