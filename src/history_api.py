@@ -8,7 +8,8 @@ def get_db():
         host="localhost",
         database="ais_data",
         user="postgres",
-        password=None
+        password="postgres"y
+
     )
 
 @app.route('/api/vessels', methods=['GET'])

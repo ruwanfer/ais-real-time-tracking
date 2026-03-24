@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AIS Real-Time Map with Predictions</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { height: 100vh; width: 100%; }
+        #info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+            font-size: 14px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        .ship-icon {
+            font-size: 40px !important;
+            text-shadow: 2px 2px 4px black;
+            cursor: pointer;
+        }
+        .prediction-text {
+            color: red;
+            font-weight: bold;
+        }
+        .arrow-text {
+            color: orange;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <strong>🚢 Real-Time AIS Ships with Predictions</strong><br>
+        Connected: <span id="status">Connecting...</span><br>
+        Ships: <span id="shipCount">0</span><br>
+        <span class="prediction-text">🔴 Red dashed lines = Prediction path</span><br>
+        <span class="arrow-text">➡️ Orange arrows = Direction</span>
+    </div>
+    <div id="map"></div>
+
+    <script>
+        var map = L.map('map').setView([61.0, 24.0], 6);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        
+        var markers = {};
+        var predictionLines = {};
+        var arrowMarkers = {};
+        var socket = io('http://localhost:5000');
+        
+        async function fetchPredictions(mmsi) {
+            try {
+                const res = await fetch(`http://localhost:5002/predict/${mmsi}`);
+                const data = await res.json();
+                return data.predictions || [];
+            } catch(e) { 
+                return []; 
+            }
+        }
+        
+        // Function to add arrow markers along the line
+        function addArrowsOnLine(points, mmsi) {
+            if (arrowMarkers[mmsi]) {
+                arrowMarkers[mmsi].forEach(marker => map.removeLayer(marker));
+            }
+            arrowMarkers[mmsi] = [];
+            
+            if (points.length < 2) return;
+            
+            // Add arrow at each segment
+            for (let i = 0; i < points.length - 1; i++) {
+                const p1 = points[i];
+                const p2 = points[i + 1];
+                
+                // Calculate midpoint for arrow
+                const midLat = (p1[0] + p2[0]) / 2;
+                const midLng = (p1[1] + p2[1]) / 2;
+                
+                // Calculate angle
+                const angle = Math.atan2(p2[0] - p1[0], p2[1] - p1[1]) * 180 / Math.PI;
+                
+                // Create arrow marker
+                const arrowIcon = L.divIcon({
+                    className: 'arrow-icon',
+                    html: '➡️',
+                    iconSize: [20, 20],
+                    popupAnchor: [0, -10]
+                });
+                
+                const arrow = L.marker([midLat, midLng], {
+                    icon: L.divIcon({
+                        className: 'arrow-icon',
+                        html: '➡️',
+                        iconSize: [24, 24]
+                    })
+                }).addTo(map);
+                
+                arrowMarkers[mmsi].push(arrow);
+            }
+        }
+        
+        async function drawPrediction(mmsi, currentLat, currentLon) {
+            if (predictionLines[mmsi]) {
+                map.removeLayer(predictionLines[mmsi]);
+            }
+            if (arrowMarkers[mmsi]) {
+                arrowMarkers[mmsi].forEach(marker => map.removeLayer(marker));
+                arrowMarkers[mmsi] = [];
+            }
+            
+            const predictions = await fetchPredictions(mmsi);
+            
+            if (predictions && predictions.length > 0) {
+                var points = [[currentLat, currentLon]];
+                predictions.forEach(p => {
+                    points.push([p.lat, p.lon]);
+                });
+                
+                // Draw prediction line
+                var line = L.polyline(points, {
+                    color: 'red',
+                    weight: 3,
+                    opacity: 0.8,
+                    dashArray: '8, 8'
+                }).addTo(map);
+                
+                line.bindPopup('<b>🚢 Prediction Path</b><br>5, 10, 15 minutes ahead');
+                predictionLines[mmsi] = line;
+                
+                // Add arrows along the line
+                addArrowsOnLine(points, mmsi);
+            }
+        }
+        
+        function addShip(ship) {
+            var marker = L.marker([ship.lat, ship.lon], {
+                icon: L.divIcon({
+                    className: 'ship-icon',
+                    html: '🚢',
+                    iconSize: [40, 40],
+                    popupAnchor: [0, -20]
+                })
+            }).addTo(map);
+            
+            marker.bindPopup(`
+                <div style="font-size:14px;">
+                    <b>🚢 ${ship.name}</b><br>
+                    📍 MMSI: ${ship.mmsi}<br>
+                    ⚡ Speed: ${ship.speed} knots<br>
+                    🧭 Course: ${ship.course}°<br>
+                    <span style="color:red;">🔴 Prediction line with arrows</span>
+                </div>
+            `);
+            
+            markers[ship.mmsi] = marker;
+            drawPrediction(ship.mmsi, ship.lat, ship.lon);
+        }
+        
+        function updateShip(ship) {
+            if (markers[ship.mmsi]) {
+                map.removeLayer(markers[ship.mmsi]);
+            }
+            if (predictionLines[ship.mmsi]) {
+                map.removeLayer(predictionLines[ship.mmsi]);
+            }
+            if (arrowMarkers[ship.mmsi]) {
+                arrowMarkers[ship.mmsi].forEach(marker => map.removeLayer(marker));
+            }
+            
+            var marker = L.marker([ship.lat, ship.lon], {
+                icon: L.divIcon({
+                    className: 'ship-icon',
+                    html: '🚢',
+                    iconSize: [40, 40],
+                    popupAnchor: [0, -20]
+                })
+            }).addTo(map);
+            
+            marker.bindPopup(`
+                <div style="font-size:14px;">
+                    <b>🚢 ${ship.name}</b><br>
+                    📍 MMSI: ${ship.mmsi}<br>
+                    ⚡ Speed: ${ship.speed} knots<br>
+                    🧭 Course: ${ship.course}°
+                </div>
+            `);
+            
+            markers[ship.mmsi] = marker;
+            drawPrediction(ship.mmsi, ship.lat, ship.lon);
+        }
+        
+        socket.on('connect', function() {
+            document.getElementById('status').innerHTML = 'Connected ✅';
+            document.getElementById('status').style.color = 'green';
+        });
+        
+        socket.on('disconnect', function() {
+            document.getElementById('status').innerHTML = 'Disconnected ❌';
+            document.getElementById('status').style.color = 'red';
+        });
+        
+        socket.on('all_ships', function(ships) {
+            console.log('Received', ships.length, 'ships');
+            document.getElementById('shipCount').innerHTML = ships.length;
+            
+            for (var mmsi in markers) map.removeLayer(markers[mmsi]);
+            for (var mmsi in predictionLines) map.removeLayer(predictionLines[mmsi]);
+            for (var mmsi in arrowMarkers) {
+                arrowMarkers[mmsi].forEach(m => map.removeLayer(m));
+            }
+            markers = {};
+            predictionLines = {};
+            arrowMarkers = {};
+            
+            ships.forEach(ship => addShip(ship));
+        });
+        
+        socket.on('ship_moved', function(ship) {
+            console.log('Ship moved:', ship.name);
+            updateShip(ship);
+        });
+        
+        socket.on('new_ship', function(ship) {
+            console.log('New ship:', ship.name);
+            addShip(ship);
+            document.getElementById('shipCount').innerHTML = Object.keys(markers).length;
+        });
+    </script>
+</body>
+</html>

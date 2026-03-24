@@ -1,15 +1,17 @@
 # prediction_api.py
 from flask import Flask, jsonify
+from flask_cors import CORS
 import psycopg2
 
 app = Flask(__name__)
+CORS(app)
 
 def get_db():
     return psycopg2.connect(
         host="localhost",
         database="ais_data",
         user="postgres",
-        password=None
+        password="postgres"
     )
 
 @app.route('/predict/<int:mmsi>')
@@ -89,4 +91,4 @@ def predict_random():
     })
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(port=5002)
