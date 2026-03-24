@@ -38,7 +38,7 @@ Leaflet Map (Browser) Prediction API (Flask)
 
 text
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Category | Technologies |
 |----------|--------------|
