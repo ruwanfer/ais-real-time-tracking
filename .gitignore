@@ -21,3 +21,4 @@ src/__pycache__/
 *.db
 *_backup.py
 database_snapshot.txt
+src/__pycache__/
