@@ -16,3 +16,8 @@ data/
 
 # Backup
 backup/
+src/__pycache__/
+*.pyc
+*.db
+*_backup.py
+database_snapshot.txt
