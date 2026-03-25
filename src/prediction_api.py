@@ -1,7 +1,7 @@
-# prediction_api.py
 from flask import Flask, jsonify
 from flask_cors import CORS
 import psycopg2
+import math
 
 app = Flask(__name__)
 CORS(app)
@@ -14,14 +14,27 @@ def get_db():
         password="postgres"
     )
 
+def calculate_prediction(lat, lon, course, speed, minutes):
+    # Convert course to radians
+    course_rad = math.radians(course)
+    
+    # Speed in knots to degrees per minute
+    # 1 knot = 0.00027 degrees per minute (approximate)
+    distance = speed * minutes * 0.00027
+    
+    # Calculate new position based on course direction
+    new_lat = lat + distance * math.cos(course_rad)
+    new_lon = lon + distance * math.sin(course_rad)
+    
+    return new_lat, new_lon
+
 @app.route('/predict/<int:mmsi>')
 def predict(mmsi):
-    # Get current ship position
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT ship_name, latitude, longitude 
-        FROM named_ships_only 
+        SELECT ship_name, latitude, longitude, speed, course
+        FROM ais_ships 
         WHERE mmsi = %s AND latitude IS NOT NULL
         ORDER BY received_at DESC LIMIT 1
     """, (mmsi,))
@@ -29,23 +42,29 @@ def predict(mmsi):
     conn.close()
     
     if not ship:
-        return jsonify({
-            "error": "Ship not found or no position data",
-            "mmsi": mmsi
-        })
+        return jsonify({"error": "Ship not found"})
     
-    name, lat, lon = ship
+    name, lat, lon, speed, course = ship
     
-    # Convert Decimal to float
+    if speed is None or speed <= 0:
+        speed = 10
+    
+    if course is None:
+        course = 0
+    
     lat = float(lat)
     lon = float(lon)
+    speed = float(speed)
+    course = float(course)
     
-    # Simple predictions (5, 10, 15 min ahead)
-    predictions = [
-        {"lat": lat + 0.01, "lon": lon + 0.01, "minutes": 5},
-        {"lat": lat + 0.02, "lon": lon + 0.02, "minutes": 10},
-        {"lat": lat + 0.03, "lon": lon + 0.03, "minutes": 15}
-    ]
+    predictions = []
+    for minutes in [5, 10, 15]:
+        new_lat, new_lon = calculate_prediction(lat, lon, course, speed, minutes)
+        predictions.append({
+            "lat": new_lat,
+            "lon": new_lon,
+            "minutes": minutes
+        })
     
     return jsonify({
         "ship": name,
@@ -56,32 +75,41 @@ def predict(mmsi):
 
 @app.route('/predict/random')
 def predict_random():
-    """Get prediction for a random ship with position"""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT mmsi, ship_name, latitude, longitude 
-        FROM named_ships_only 
-        WHERE latitude IS NOT NULL
+        SELECT mmsi, ship_name, latitude, longitude, speed, course
+        FROM ais_ships 
+        WHERE latitude IS NOT NULL AND ship_name IS NOT NULL
         ORDER BY RANDOM() LIMIT 1
     """)
     ship = cursor.fetchone()
     conn.close()
     
     if not ship:
-        return jsonify({"error": "No ships with position data"})
+        return jsonify({"error": "No ships found"})
     
-    mmsi, name, lat, lon = ship
+    mmsi, name, lat, lon, speed, course = ship
     
-    # Convert Decimal to float
+    if speed is None or speed <= 0:
+        speed = 10
+    
+    if course is None:
+        course = 0
+    
     lat = float(lat)
     lon = float(lon)
+    speed = float(speed)
+    course = float(course)
     
-    predictions = [
-        {"lat": lat + 0.01, "lon": lon + 0.01, "minutes": 5},
-        {"lat": lat + 0.02, "lon": lon + 0.02, "minutes": 10},
-        {"lat": lat + 0.03, "lon": lon + 0.03, "minutes": 15}
-    ]
+    predictions = []
+    for minutes in [5, 10, 15]:
+        new_lat, new_lon = calculate_prediction(lat, lon, course, speed, minutes)
+        predictions.append({
+            "lat": new_lat,
+            "lon": new_lon,
+            "minutes": minutes
+        })
     
     return jsonify({
         "ship": name,
